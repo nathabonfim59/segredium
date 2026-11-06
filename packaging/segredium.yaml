@@ -1,0 +1,17 @@
+# segredium configuration. Every value shown is the default; uncomment to change it.
+# Environment variables (SEGREDIUM_*) override this file. See docs/configuration.md.
+#
+# server:
+#   https_addr: ":443"            # use "127.0.0.1:443" to listen on loopback only
+#   http_addr: ""
+#   account_id: "123456789012"
+#   default_region: us-east-1
+#   log_level: info
+#   access_mode: machine          # machine | owner
+# storage:
+#   backend: file
+#   path: /var/lib/segredium/data
+#   purge_interval: 1h
+# tls:
+#   mode: ca
+#   ca_dir: /var/lib/segredium/ca

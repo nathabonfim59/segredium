@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: make check
+
+  packages:
+    name: Packages
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: make packages
+      - uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: dist/
+          retention-days: 7
+
+  e2e:
+    name: End-to-end (AWS CLI v2, boto3, aws-sdk-go-v2)
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Install boto3
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install boto3
+      # The script needs root (port 443, /etc/hosts, system trust store) and restores them on exit.
+      - name: Run e2e
+        run: sudo env "PATH=$RUNNER_TEMP/venv/bin:$PATH" "HOME=$HOME" make e2e

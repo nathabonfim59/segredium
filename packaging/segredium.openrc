@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+description="segredium (AWS Secrets Manager compatible server)"
+command="/usr/bin/segredium"
+command_args="serve -config /etc/segredium/segredium.yaml"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/segredium.log"
+error_log="/var/log/segredium.log"
+
+depend() {
+	need net
+}
+
+start_pre() {
+	checkpath --directory --mode 0700 /var/lib/segredium
+}

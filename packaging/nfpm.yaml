@@ -1,0 +1,53 @@
+# nfpm config for .deb, .rpm and .apk. Driven by `make packages`, which sets
+# VERSION (e.g. 0.1.0) and ARCH (amd64 | arm64) and stages the binary at bin/pkg/segredium first.
+name: segredium
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+section: admin
+priority: optional
+maintainer: nathabonfim59 <dev@nathabonfim59.com>
+description: |
+  Self-hosted AWS Secrets Manager compatible server.
+  Point secretsmanager.<region>.amazonaws.com at it in /etc/hosts and trust its CA:
+  unmodified AWS CLIs and SDKs keep working.
+vendor: segredium
+homepage: https://github.com/nathabonfim59/segredium
+license: MIT
+
+contents:
+  - src: bin/pkg/segredium
+    dst: /usr/bin/segredium
+    file_info:
+      mode: 0755
+  - src: packaging/segredium.yaml
+    dst: /etc/segredium/segredium.yaml
+    type: config|noreplace
+    file_info:
+      mode: 0600
+  - src: packaging/segredium.service
+    dst: /usr/lib/systemd/system/segredium.service
+    packager: deb
+  - src: packaging/segredium.service
+    dst: /usr/lib/systemd/system/segredium.service
+    packager: rpm
+  - src: packaging/segredium.openrc
+    dst: /etc/init.d/segredium
+    packager: apk
+    file_info:
+      mode: 0755
+  - src: LICENSE
+    dst: /usr/share/doc/segredium/LICENSE
+  - src: README.md
+    dst: /usr/share/doc/segredium/README.md
+  - src: docs/
+    dst: /usr/share/doc/segredium/docs/
+    type: tree
+  - dst: /var/lib/segredium
+    type: dir
+    file_info:
+      mode: 0700
+
+scripts:
+  postinstall: packaging/postinstall.sh
+  preremove: packaging/preremove.sh
