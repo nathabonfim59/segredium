@@ -1,8 +1,9 @@
 # segredium
 
-segredium is a small, self-hosted server that speaks the AWS Secrets Manager API. Point
-`secretsmanager.<region>.amazonaws.com` at it in `/etc/hosts`, trust its CA, and unmodified AWS
-tools (AWS CLI, boto3, the AWS SDKs) keep working without an endpoint override.
+A self-hostable, fully local AWS Secrets Manager for dev and tests.
+
+Point `secretsmanager.<region>.amazonaws.com` at it in `/etc/hosts`, trust its CA, and unmodified
+AWS tools (AWS CLI, boto3, the AWS SDKs) work without an endpoint override or an AWS account.
 
 - **Drop-in.** The AWS JSON 1.1 protocol with AWS's member names, shapes, error types and messages.
   It is tested with AWS CLI v2, boto3 and aws-sdk-go-v2 against the real hostnames.
@@ -10,12 +11,18 @@ tools (AWS CLI, boto3, the AWS SDKs) keep working without an endpoint override.
   12 MB, and there are no background goroutines except one purge timer.
 - **Persistent.** Every secret is stored as its own AES-256-GCM encrypted file, with a machine key
   that is generated automatically.
-- **Local trust model.** The machine is the trust boundary, as with an IAM policy. An optional
-  per-Unix-user mode limits each secret to the user who created it.
 
 > [!WARNING]
-> Request signatures are not verified yet (`auth.mode=none`). Run segredium on a trusted machine,
-> listening on loopback only.
+> **Built for development and tests.** If you run it anywhere else, know these limits:
+>
+> - Any process on the machine that can reach the port can read every secret, and root always can.
+>   Owner mode (`SEGREDIUM_ACCESS_MODE=owner`) limits each secret to the Unix user who created it. It
+>   does not stop root.
+> - The master key sits next to the data. The encryption protects a copied disk or a backup, not
+>   software that already runs on the host.
+> - Request signatures are not checked. Any credentials work.
+> - Rotation, replication, resource policies and tagging are missing, so anything that depends on
+>   them will not behave like AWS.
 
 ## Supported operations
 

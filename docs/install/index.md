@@ -2,6 +2,10 @@
 
 Installing segredium takes three steps. You install the server, point the AWS hostnames at it, and make your clients trust its certificate authority. This page covers the first step and helps you pick a method. [Route and trust](../setup) covers the other two.
 
+::: warning Built for development and tests
+Segredium is meant for development machines and test runs. Any local process can read the secrets it holds, and request signatures are not checked. Read [the limits](../security) before you use it anywhere else.
+:::
+
 ## Requirements
 
 - Linux on x86_64 (amd64) or aarch64 (arm64). The binary is static and needs no libraries.

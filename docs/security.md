@@ -1,5 +1,16 @@
 # Security model
 
+::: warning Built for development and tests
+If you run segredium anywhere else, know these limits.
+
+| Limit | What it means |
+|---|---|
+| Access | Any process on the machine that can reach the port can read every secret, and root always can. [Owner mode](#owner-mode) limits each secret to the Unix user who created it. It does not stop root. |
+| Key | The master key sits next to the data. The encryption protects a copied disk or a backup, not software that already runs on the host. |
+| Auth | Request signatures are not checked. Any credentials work. |
+| Gaps | Rotation, replication, resource policies and tagging are missing, so anything that depends on them will not behave like AWS. See [API compatibility](./compatibility). |
+:::
+
 ## Trust boundary
 
 The machine is the trust boundary. In the default `server.access_mode: machine`, any process

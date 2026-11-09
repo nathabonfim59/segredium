@@ -26,7 +26,7 @@ function goPackageItems(): DefaultTheme.SidebarItem[] {
 // The pages live in ../docs so the same Markdown ships in the packages.
 export default defineConfig({
   title: 'segredium',
-  description: 'A self-hosted server that speaks the AWS Secrets Manager API.',
+  description: 'A self-hostable, fully local AWS Secrets Manager for dev and tests.',
   srcDir: '../docs',
   base: '/segredium/',
   cleanUrls: true,
@@ -34,11 +34,7 @@ export default defineConfig({
   srcExclude: ['development.md'],
   themeConfig: {
     nav: [
-      { text: 'Install', link: '/install/' },
-      { text: 'Configuration', link: '/configuration' },
-      { text: 'Security', link: '/security' },
-      { text: 'Compatibility', link: '/compatibility' },
-      { text: 'API reference', link: '/api-reference/', activeMatch: '/api-reference/' },
+      { text: 'Docs', link: '/install/', activeMatch: '^/(install|setup|configuration|security|compatibility|api-reference)' },
       { text: 'Releases', link: 'https://github.com/nathabonfim59/segredium/releases' },
     ],
     sidebar: [
@@ -81,6 +77,7 @@ export default defineConfig({
       pattern: 'https://github.com/nathabonfim59/segredium/edit/main/docs/:path',
     },
     search: { provider: 'local' },
+    outline: { label: 'Contents', level: [2, 3] },
     footer: { message: 'Released under the MIT License.' },
   },
 })

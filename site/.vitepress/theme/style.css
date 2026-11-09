@@ -1,0 +1,475 @@
+/*
+ * segredium docs theme.
+ * Structure from opencode.ai/docs (monospace headings and labels, [ ] sidebar markers, hairline borders),
+ * PlanetScale's blog (dotted rules, orange accent, bracketed tags) and Linear (near-black dark
+ * mode, tight Inter headings, translucent borders, square buttons).
+ */
+
+:root {
+  --sg-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sg-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --sg-accent: #e8530f;
+  --sg-accent-hover: #c8440a;
+  --sg-accent-soft: rgba(232, 83, 15, 0.1);
+
+  --vp-font-family-base: var(--sg-sans);
+  --vp-font-family-mono: var(--sg-mono);
+
+  --vp-c-bg: #fafaf9;
+  --vp-c-bg-alt: #f3f3f1;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f0f0ee;
+  --vp-c-text-1: #141414;
+  --vp-c-text-2: #414141;
+  --vp-c-text-3: #6b6b68;
+  --vp-c-divider: #deded9;
+  --vp-c-gutter: #e8e8e4;
+  --vp-c-border: #d2d2cc;
+
+  --vp-c-brand-1: var(--sg-accent);
+  --vp-c-brand-2: var(--sg-accent-hover);
+  --vp-c-brand-3: var(--sg-accent);
+  --vp-c-brand-soft: var(--sg-accent-soft);
+
+  --vp-button-brand-bg: var(--sg-accent);
+  --vp-button-brand-text: #fff;
+  --vp-button-brand-border: var(--sg-accent);
+  --vp-button-brand-hover-border: var(--sg-accent);
+  --vp-button-brand-hover-text: var(--sg-accent);
+  --vp-button-brand-hover-bg: transparent;
+  --vp-button-brand-active-border: var(--sg-accent);
+  --vp-button-brand-active-text: var(--sg-accent);
+  --vp-button-brand-active-bg: transparent;
+  --vp-button-alt-border: var(--vp-c-border);
+  --vp-button-alt-hover-border: var(--sg-accent);
+  --vp-button-alt-hover-text: var(--sg-accent);
+  --vp-button-alt-bg: transparent;
+  --vp-button-alt-hover-bg: var(--vp-c-bg-soft);
+  --vp-button-alt-text: var(--vp-c-text-1);
+
+  --vp-code-block-bg: #f3f3f1;
+  --vp-code-bg: rgba(20, 20, 20, 0.06);
+  --vp-code-color: #8f2f05;
+
+  --vp-home-hero-name-color: var(--vp-c-text-1);
+  --vp-layout-max-width: 1440px;
+}
+
+.dark {
+  --vp-c-bg: #08090a;
+  --vp-c-bg-alt: #0c0d0f;
+  --vp-c-bg-elv: #141516;
+  --vp-c-bg-soft: #141516;
+  --vp-c-text-1: #f7f8f8;
+  --vp-c-text-2: #c4c7cc;
+  --vp-c-text-3: #8a8f98;
+  --vp-c-divider: rgba(255, 255, 255, 0.08);
+  --vp-c-gutter: rgba(255, 255, 255, 0.05);
+  --vp-c-border: rgba(255, 255, 255, 0.12);
+
+  --sg-accent: #ff6a2b;
+  --sg-accent-hover: #ff8a55;
+  --sg-accent-soft: rgba(255, 106, 43, 0.14);
+  --vp-button-brand-text: #08090a;
+
+  --vp-code-block-bg: rgba(255, 255, 255, 0.04);
+  --vp-code-bg: rgba(255, 255, 255, 0.07);
+  --vp-code-color: #ffb08a;
+}
+
+body {
+  letter-spacing: -0.003em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Top bar: mono labels, hairline bottom border (opencode, Linear) ---- */
+.VPNav .VPNavBar,
+.VPNavBar.has-sidebar .content-body {
+  background: var(--vp-c-bg);
+}
+.VPNavBar .divider-line { background: var(--vp-c-divider); }
+.VPNavBarTitle .title {
+  font-family: var(--sg-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.VPNavBarTitle .title::before {
+  content: '';
+  width: 12px;
+  height: 18px;
+  margin-right: 10px;
+  background: var(--sg-accent);
+  border-radius: 1px;
+  display: inline-block;
+}
+.VPNavBarMenuLink,
+.VPNavBarMenuGroup .text {
+  font-family: var(--sg-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+.VPNavBarMenuLink:hover,
+.VPNavBarMenuLink.active { color: var(--sg-accent); }
+
+/* ---- Sidebar: [ ] markers and small caps labels (opencode) ---- */
+.VPSidebar { background: var(--vp-c-bg); }
+.VPSidebarItem.level-0 > .item > .text,
+.VPSidebarItem.level-0 > .item > h2.text {
+  font-family: var(--sg-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+.VPSidebarItem.level-1 .link > .text,
+.VPSidebarItem.level-2 .link > .text {
+  font-family: var(--sg-mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--vp-c-text-2);
+}
+.VPSidebarItem.level-1 .link > .text::before {
+  content: '[ ] ';
+  white-space: pre;
+  color: var(--vp-c-text-3);
+}
+.VPSidebarItem.level-1.is-active > .item > .link > .text::before {
+  content: '[-] ';
+  color: var(--sg-accent);
+}
+.VPSidebarItem.level-1.is-active > .item > .link > .text {
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+.VPSidebarItem .link:hover > .text { color: var(--sg-accent); }
+.VPSidebarItem.is-active > .item > .indicator { display: none; }
+.VPSidebar .group + .group { border-top: 1px dotted var(--vp-c-border); padding-top: 18px; }
+
+/* ---- Content: Linear-style tight headings, dotted section rules (PlanetScale) ---- */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.vp-doc h4 { font-family: var(--sg-mono); }
+.vp-doc h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.vp-doc h2 {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px dotted var(--vp-c-border);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+/* VitePress offsets the hover "#" by the default h2 padding (24px). Ours is 28px. */
+.vp-doc h2 > .header-anchor { top: 28px; }
+.vp-doc h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.vp-doc a {
+  color: var(--vp-c-text-1);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--vp-c-border);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.vp-doc a:hover { color: var(--sg-accent); text-decoration-color: var(--sg-accent); }
+.vp-doc a.header-anchor { text-decoration: none; }
+.vp-doc strong { font-weight: 600; }
+.vp-doc blockquote { border-left: 2px solid var(--sg-accent); }
+
+/* ---- Code: flat, hairline, mono (opencode) ---- */
+.vp-doc :not(pre) > code {
+  font-family: var(--sg-mono);
+  font-size: 0.86em;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+.vp-doc div[class*='language-'] {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  background: var(--vp-code-block-bg);
+}
+.vp-doc [class*='language-'] code,
+.vp-doc [class*='language-'] pre {
+  font-family: var(--sg-mono);
+  font-size: 13px;
+}
+.vp-doc [class*='language-'] > span.lang {
+  font-family: var(--sg-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+
+/* ---- Tables and callouts: hairlines, no fills ---- */
+.vp-doc table { display: table; width: 100%; border: 1px solid var(--vp-c-divider); border-radius: 4px; }
+.vp-doc th {
+  font-family: var(--sg-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+  background: transparent;
+}
+.vp-doc tr, .vp-doc th, .vp-doc td { border-color: var(--vp-c-divider); }
+.vp-doc tr:nth-child(2n) { background: transparent; }
+.vp-doc .custom-block {
+  border: 1px solid var(--vp-c-divider);
+  border-left: 3px solid var(--sg-accent);
+  border-radius: 4px;
+  background: transparent;
+}
+.vp-doc .custom-block-title { font-family: var(--sg-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* ---- Right-hand outline: CONTENTS label with a bar marker (opencode) ---- */
+.VPDocAsideOutline .outline-title {
+  font-family: var(--sg-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+.VPDocAsideOutline .outline-link { font-family: var(--sg-mono); font-size: 12px; }
+.VPDocAsideOutline .outline-link:hover,
+.VPDocAsideOutline .outline-link.active { color: var(--sg-accent); }
+.VPDocAsideOutline .outline-marker { background: var(--sg-accent); width: 2px; }
+
+/* ---- Search box ---- */
+.VPNavBarSearchButton,
+.DocSearch-Button,
+.VPNavBarSearch .DocSearch-Button,
+.VPNavBarSearchButton .vp-meta-key,
+.DocSearch-Button .DocSearch-Button-Key { border-radius: 0; }
+
+/* ---- Home: big tight headline (Linear), square orange and outline buttons (PlanetScale) ---- */
+.VPHero .name, .VPHero .text {
+  font-family: var(--sg-mono);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+.VPHero .name {
+  font-family: var(--sg-mono);
+  font-size: 14px !important;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sg-accent);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.VPHero .text { font-size: clamp(2rem, 5vw, 3.6rem); }
+.VPHero .tagline {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--vp-c-text-3);
+  max-width: 34em;
+}
+.VPButton {
+  font-family: var(--sg-mono);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 0;
+}
+.VPButton.alt:hover { border-color: var(--sg-accent); color: var(--sg-accent); }
+
+/* Every button has a 2px outline, about the stroke width of the 13px semibold mono label, so the
+   hover state can change colors without changing size. */
+.VPButton.medium { border-width: 2px; line-height: 36px; }
+.VPButton.alt { border-color: var(--vp-c-border); }
+
+/* Primary button: uppercase label. On hover the fill goes transparent and the label and outline
+   take the accent color, which stays readable on both the light and the dark background. */
+.VPButton.brand {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-color: var(--sg-accent);
+  transition: background-color 0.15s, color 0.15s;
+}
+.VPButton.medium.brand:hover,
+.VPButton.medium.brand:active {
+  background-color: transparent;
+  border-color: var(--sg-accent);
+  color: var(--sg-accent);
+}
+
+.VPFeatures .VPFeature,
+.VPFeatures .VPLink.link { border-radius: 4px; }
+.VPFeature {
+  background: transparent !important;
+  border: 1px solid var(--vp-c-divider) !important;
+  border-radius: 4px !important;
+  transition: border-color 0.15s;
+}
+.VPFeature:hover { border-color: var(--sg-accent) !important; }
+.VPFeature .title {
+  font-family: var(--sg-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+/* Four cards across need about 1280px for a one-line title. Use two columns below that. */
+@media (min-width: 960px) and (max-width: 1279px) {
+  .VPFeatures .item.grid-4 { width: 50%; }
+}
+/* Non-breaking spaces keep each bracket on the same line as the word next to it. */
+.VPFeature .title::before { content: '[\00a0'; color: var(--sg-accent); }
+.VPFeature .title::after { content: '\00a0]'; color: var(--sg-accent); }
+.VPFeature .details { color: var(--vp-c-text-3); line-height: 1.65; }
+
+/* ---- Footer and pager ---- */
+.VPDocFooter .prev-next { border-top: 1px dotted var(--vp-c-border); }
+.VPDocFooterLateUpdated, .VPFooter .message, .edit-link-button { font-family: var(--sg-mono); font-size: 12px; }
+.VPDocFooter .pager-link { border-radius: 0; border-color: var(--vp-c-divider); }
+.VPDocFooter .pager-link:hover { border-color: var(--sg-accent); }
+.VPDocFooter .pager-link .title { color: var(--sg-accent); font-family: var(--sg-mono); }
+
+::selection { background: var(--sg-accent); color: #fff; }
+
+/* ---- Spacing and wrapping fixes ---- */
+.VPHero .tagline { margin-top: 28px; }
+.VPHero .actions { margin-top: 36px; }
+.VPSidebarItem.level-1 .link > .text {
+  display: block;
+  padding-left: 4ch;
+  text-indent: -4ch;
+}
+
+/* ---- Square corners on every button ---- */
+.VPButton,
+.VPSwitch,
+.VPSwitch .check,
+.VPNavBarAppearance .VPSwitchAppearance,
+.vp-doc div[class*='language-'] > button.copy,
+.VPLocalSearchBox .search-keyboard-shortcuts kbd,
+.VPLocalSearchBox .result > a,
+.VPNavScreenMenuLink,
+.VPFlyout .button { border-radius: 0 !important; }
+.VPSwitch .check { width: 18px; height: 18px; }
+
+
+/* =====================================================================
+   Notice ("::: warning"): a spec sheet. Header strip with a [!] marker and an outlined tag,
+   orange viewfinder corners, and rows separated by dotted rules.
+   ===================================================================== */
+.vp-doc .custom-block.warning {
+  position: relative;
+  margin: 40px 0;
+  padding: 0;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+/* Viewfinder corners, top-left and bottom-right. */
+.vp-doc .custom-block.warning::before,
+.vp-doc .custom-block.warning::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid var(--sg-accent);
+  pointer-events: none;
+}
+.vp-doc .custom-block.warning::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+.vp-doc .custom-block.warning::after { right: -1px; bottom: -1px; border-right-width: 2px; border-bottom-width: 2px; }
+
+/* Header strip. */
+.vp-doc .custom-block.warning .custom-block-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 24px;
+  background: var(--sg-accent-soft);
+  border-bottom: 1px dotted var(--vp-c-border);
+  color: var(--vp-c-text-1);
+  font-family: var(--sg-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.vp-doc .custom-block.warning .custom-block-title::before {
+  content: '[!]';
+  color: var(--sg-accent);
+  letter-spacing: 0;
+}
+.vp-doc .custom-block.warning .custom-block-title::after {
+  content: 'Not a vault';
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--sg-accent);
+  color: var(--sg-accent);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* Body text. */
+.vp-doc .custom-block.warning > p { margin: 16px 24px; color: var(--vp-c-text-2); }
+.vp-doc .custom-block.warning a { color: var(--sg-accent); text-decoration-color: var(--sg-accent-soft); }
+.vp-doc .custom-block.warning a:hover { text-decoration-color: var(--sg-accent); }
+
+/* Rows. */
+.vp-doc .custom-block.warning table {
+  display: table;
+  width: 100%;
+  margin: 0 0 8px;
+  border: 0;
+  border-collapse: collapse;
+}
+.vp-doc .custom-block.warning tr { background: transparent !important; border: 0; }
+.vp-doc .custom-block.warning tbody tr { border-top: 1px dotted var(--vp-c-border); }
+.vp-doc .custom-block.warning th,
+.vp-doc .custom-block.warning td { border: 0; background: transparent; vertical-align: top; }
+.vp-doc .custom-block.warning th {
+  padding: 6px 24px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+.vp-doc .custom-block.warning th:first-child { color: var(--sg-accent); }
+.vp-doc .custom-block.warning th:last-child { padding-left: 0; }
+.vp-doc .custom-block.warning td:first-child {
+  width: 1%;
+  padding: 16px 28px 16px 24px;
+  white-space: nowrap;
+  font-family: var(--sg-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sg-accent);
+}
+.vp-doc .custom-block.warning td:last-child {
+  padding: 15px 24px 15px 0;
+  line-height: 1.7;
+  color: var(--vp-c-text-2);
+}
+
+/* Narrow screens: stack the label above its text. */
+@media (max-width: 640px) {
+  .vp-doc .custom-block.warning thead { display: none; }
+  .vp-doc .custom-block.warning table,
+  .vp-doc .custom-block.warning tbody,
+  .vp-doc .custom-block.warning tr,
+  .vp-doc .custom-block.warning td { display: block; width: auto; }
+  .vp-doc .custom-block.warning td:first-child { width: auto; padding: 16px 20px 2px; }
+  .vp-doc .custom-block.warning td:last-child { padding: 0 20px 16px; }
+  .vp-doc .custom-block.warning .custom-block-title { padding: 12px 20px; flex-wrap: wrap; }
+  .vp-doc .custom-block.warning > p { margin: 14px 20px; }
+}

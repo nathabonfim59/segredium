@@ -8,7 +8,7 @@ section: admin
 priority: optional
 maintainer: nathabonfim59 <dev@nathabonfim59.com>
 description: |
-  Self-hosted AWS Secrets Manager compatible server.
+  A self-hostable, fully local AWS Secrets Manager for dev and tests.
   Point secretsmanager.<region>.amazonaws.com at it in /etc/hosts and trust its CA:
   unmodified AWS CLIs and SDKs keep working.
 vendor: segredium

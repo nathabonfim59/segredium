@@ -11,6 +11,8 @@
     "docs:verify": "npm run docs:check && npm run docs:build"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "vitepress": "1.6.4"
   }
 }
