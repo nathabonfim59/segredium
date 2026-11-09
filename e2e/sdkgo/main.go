@@ -41,6 +41,9 @@ func run(ctx context.Context) error {
 		if err := listChecks(ctx, client); err != nil {
 			return fmt.Errorf("%s list: %w", region, err)
 		}
+		if err := batchChecks(ctx, client); err != nil {
+			return fmt.Errorf("%s batch: %w", region, err)
+		}
 		for _, binary := range []bool{false, true} {
 			if err := mutationChecks(ctx, client, binary); err != nil {
 				return fmt.Errorf("%s lifecycle binary=%t: %w", region, binary, err)
@@ -55,7 +58,108 @@ func run(ctx context.Context) error {
 		if !errors.As(err, &missing) {
 			return fmt.Errorf("missing describe error: %w", err)
 		}
-		fmt.Printf("PASS: aws-sdk-go-v2 %s: string, binary, stages, idempotency, describe, list, pagination, update, delete, restore, typed errors\n", region)
+		fmt.Printf("PASS: aws-sdk-go-v2 %s: string, binary, stages, idempotency, describe, list, batch, pagination, update, delete, restore, typed errors\n", region)
+	}
+	return nil
+}
+
+func batchChecks(ctx context.Context, client *secretsmanager.Client) error {
+	names := []string{"e2e/go/binary-false", "e2e/go/binary-true"}
+	expected := make(map[string]*secretsmanager.GetSecretValueOutput, len(names))
+	for _, name := range names {
+		value, err := client.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{SecretId: aws.String(name)})
+		if err != nil {
+			return err
+		}
+		expected[name] = value
+	}
+	ids := append(slices.Clone(names), names[0], "e2e/go/absent")
+	batch, err := client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{SecretIdList: ids})
+	if err != nil {
+		return err
+	}
+	if batch.NextToken != nil || len(batch.SecretValues) != 3 || len(batch.Errors) != 1 {
+		return fmt.Errorf("unexpected batch by id: %+v", batch)
+	}
+	missing := batch.Errors[0]
+	if aws.ToString(missing.SecretId) != "e2e/go/absent" || aws.ToString(missing.ErrorCode) != "ResourceNotFoundException" || aws.ToString(missing.Message) == "" {
+		return fmt.Errorf("unexpected batch error: %+v", missing)
+	}
+	seen := map[string]int{}
+	for _, entry := range batch.SecretValues {
+		name := aws.ToString(entry.Name)
+		seen[name]++
+		reference := expected[name]
+		if reference == nil || aws.ToString(entry.ARN) != aws.ToString(reference.ARN) ||
+			aws.ToString(entry.VersionId) != aws.ToString(reference.VersionId) ||
+			!slices.Equal(entry.VersionStages, []string{"AWSCURRENT"}) ||
+			entry.CreatedDate == nil || reference.CreatedDate == nil || !entry.CreatedDate.Equal(*reference.CreatedDate) ||
+			!bytes.Equal(entry.SecretBinary, reference.SecretBinary) || aws.ToString(entry.SecretString) != aws.ToString(reference.SecretString) {
+			return fmt.Errorf("unexpected batch value: %+v", entry)
+		}
+	}
+	if seen[names[0]] != 2 || seen[names[1]] != 1 {
+		return fmt.Errorf("unexpected duplicate batch entries: %+v", seen)
+	}
+	// A deleted secret is a per-secret error, not a failed call.
+	scheduled := "e2e/go/batch-scheduled"
+	created, err := client.CreateSecret(ctx, &secretsmanager.CreateSecretInput{Name: aws.String(scheduled), SecretString: aws.String("scheduled")})
+	if err != nil {
+		return err
+	}
+	if _, err := client.DeleteSecret(ctx, &secretsmanager.DeleteSecretInput{SecretId: created.ARN, RecoveryWindowInDays: aws.Int64(7)}); err != nil {
+		return err
+	}
+	batch, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{SecretIdList: []string{scheduled}})
+	if err != nil || len(batch.SecretValues) != 0 || batch.NextToken != nil || len(batch.Errors) != 1 {
+		return fmt.Errorf("unexpected batch for deleted secret: %+v, error: %v", batch, err)
+	}
+	deleted := batch.Errors[0]
+	if aws.ToString(deleted.SecretId) != scheduled || aws.ToString(deleted.ErrorCode) != "InvalidRequestException" {
+		return fmt.Errorf("unexpected batch deleted error: %+v", deleted)
+	}
+	if _, err := client.DeleteSecret(ctx, &secretsmanager.DeleteSecretInput{SecretId: created.ARN, ForceDeleteWithoutRecovery: aws.Bool(true)}); err != nil {
+		return err
+	}
+	filters := []types.Filter{{Key: "name", Values: []string{"e2e/go/binary-"}}}
+	first, err := client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{Filters: filters, MaxResults: aws.Int32(1)})
+	if err != nil || len(first.SecretValues) != 1 || first.NextToken == nil {
+		return fmt.Errorf("unexpected first batch page: %+v, error: %v", first, err)
+	}
+	last, err := client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{Filters: filters, MaxResults: aws.Int32(20), NextToken: first.NextToken})
+	if err != nil || len(last.SecretValues) != 1 || last.NextToken != nil {
+		return fmt.Errorf("unexpected last batch page: %+v, error: %v", last, err)
+	}
+	paged := []string{aws.ToString(first.SecretValues[0].Name), aws.ToString(last.SecretValues[0].Name)}
+	slices.Sort(paged)
+	if !slices.Equal(paged, names) {
+		return fmt.Errorf("unexpected batch pages: %+v", paged)
+	}
+	empty, err := client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{Filters: []types.Filter{{Key: "name", Values: []string{"e2e/go/absent"}}}})
+	if err != nil || len(empty.SecretValues) != 0 || empty.NextToken != nil {
+		return fmt.Errorf("unexpected empty batch: %+v, error: %v", empty, err)
+	}
+	_, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{Filters: filters, NextToken: aws.String("invalid-token")})
+	var invalidToken *types.InvalidNextTokenException
+	if !errors.As(err, &invalidToken) {
+		return fmt.Errorf("invalid batch token error: %w", err)
+	}
+	_, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{})
+	var parameter *types.InvalidParameterException
+	if !errors.As(err, &parameter) {
+		return fmt.Errorf("batch without ids or filters: %w", err)
+	}
+	_, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{SecretIdList: names, Filters: filters})
+	if !errors.As(err, &parameter) {
+		return fmt.Errorf("batch with ids and filters: %w", err)
+	}
+	_, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{SecretIdList: names, MaxResults: aws.Int32(1)})
+	if !errors.As(err, &parameter) {
+		return fmt.Errorf("batch ids with MaxResults: %w", err)
+	}
+	_, err = client.BatchGetSecretValue(ctx, &secretsmanager.BatchGetSecretValueInput{SecretIdList: names, NextToken: aws.String("token")})
+	if !errors.As(err, &parameter) {
+		return fmt.Errorf("batch ids with NextToken: %w", err)
 	}
 	return nil
 }

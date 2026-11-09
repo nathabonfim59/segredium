@@ -80,5 +80,46 @@ class PaginationChecks(unittest.TestCase):
         self.check_client("CLI", supports_sort_by=True)
 
 
+class BatchPaginationChecks(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.clients = load_clients()
+
+    def check_client(self, kind):
+        wrapper = self.clients[kind]
+        client = wrapper.__new__(wrapper)
+        prefix = f"e2e/{client.label.replace(' ', '-')}/"
+        names = [prefix + "SecretBinary", prefix + "SecretString"]
+        calls = []
+
+        def call(operation, *, error=None, **params):
+            self.assertEqual(operation, "batch_get_secret_value")
+            calls.append(params)
+            if error:
+                self.assertEqual(error, "InvalidNextTokenException")
+                self.assertEqual(params, {"Filters": [{"Key": "name", "Values": [prefix + "Secret"]}],
+                                          "NextToken": "invalid-token"})
+                return
+            if params["Filters"][0]["Values"] == ["e2e/absent"]:
+                return {"SecretValues": []}
+            self.assertEqual(params["Filters"], [{"Key": "name", "Values": [prefix + "Secret"]}])
+            if "NextToken" in params:
+                self.assertEqual(params["NextToken"], "page-2")
+                self.assertEqual(params["MaxResults"], 20)
+                return {"SecretValues": [{"Name": names[1]}]}
+            self.assertEqual(params["MaxResults"], 1)
+            return {"SecretValues": [{"Name": names[0]}], "NextToken": "page-2"}
+
+        client.call = call
+        self.clients["batch_pagination_checks"](client, prefix, names)
+        self.assertEqual(len(calls), 4)
+
+    def test_cli(self):
+        self.check_client("CLI")
+
+    def test_boto(self):
+        self.check_client("Boto")
+
+
 if __name__ == "__main__":
     unittest.main()

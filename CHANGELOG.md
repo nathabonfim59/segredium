@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+Released 2026-11-09.
+
+- `BatchGetSecretValue` (up to 20 secrets per call): by id or by the same filters as `ListSecrets`,
+  with per-secret errors, pagination and the `AWSCURRENT` version of each secret.
+
 ## 0.1.0
 
 First public release.

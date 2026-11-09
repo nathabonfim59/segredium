@@ -26,12 +26,13 @@ AWS tools (AWS CLI, boto3, the AWS SDKs) work without an endpoint override or an
 
 ## Supported operations
 
-`CreateSecret`, `GetSecretValue`, `PutSecretValue`, `DescribeSecret`, `ListSecrets`,
-`UpdateSecret`, `DeleteSecret` and `RestoreSecret`, with:
+`CreateSecret`, `GetSecretValue`, `PutSecretValue`, `BatchGetSecretValue`, `DescribeSecret`,
+`ListSecrets`, `UpdateSecret`, `DeleteSecret` and `RestoreSecret`, with:
 
 - string and binary values;
 - staging labels (`AWSCURRENT` / `AWSPREVIOUS` / custom) and token idempotency;
-- ListSecrets filters, sorting and pagination;
+- ListSecrets filters, sorting and pagination, and batch reads by id or filter, with per-secret
+  errors;
 - recovery windows with automatic purge.
 
 Other operations return `UnknownOperationException`. See [docs/compatibility.md](docs/compatibility.md)
@@ -80,6 +81,7 @@ Then use AWS as usual:
 aws secretsmanager create-secret --name example --secret-string first
 aws secretsmanager put-secret-value --secret-id example --secret-string second
 aws secretsmanager get-secret-value --secret-id example --version-stage AWSPREVIOUS
+aws secretsmanager batch-get-secret-value --secret-id-list example
 aws secretsmanager list-secrets
 aws secretsmanager delete-secret --secret-id example --recovery-window-in-days 7
 aws secretsmanager restore-secret --secret-id example
