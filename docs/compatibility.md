@@ -21,6 +21,7 @@ for behavior.
 |---|---|
 | `CreateSecret` | String or binary value, or no value. Description, `KmsKeyId` (recorded, not used for encryption), tags, `Type`. `ClientRequestToken` idempotency: a retry with the same value succeeds, a different value is `ResourceExistsException`. |
 | `GetSecretValue` | By name, full ARN or partial ARN. Selects by `VersionId` and/or `VersionStage` (default `AWSCURRENT`). A deleted secret is `InvalidRequestException`. |
+| `BatchGetSecretValue` | Up to 20 secrets per call, by name, full ARN or partial ARN in `SecretIdList`, or by `Filters` with the same keys and matching as `ListSecrets` and up to 20 results per page with an opaque `NextToken`. Exactly one of the two is required, and `MaxResults` and `NextToken` are only valid with `Filters`. Returns the `AWSCURRENT` version of each secret. A missing, deleted or forbidden secret does not fail the call: it is reported in `Errors` with the same code and message `GetSecretValue` would return. Duplicate ids are each reported. |
 | `PutSecretValue` | New version with `AWSCURRENT` (the previous current version becomes `AWSPREVIOUS`) or custom `VersionStages`. Token idempotency. Old unlabeled versions are pruned as in AWS (at most 100, after 24 h). |
 | `DescribeSecret` | Full metadata, `VersionIdsToStages`, tags, dates. Works on secrets scheduled for deletion. |
 | `ListSecrets` | `Filters` (`name`, `description`, `tag-key`, `tag-value`, `primary-region`, `owning-service`, `all`; prefix match, `!` negation, AWS case rules), `SortOrder`, `SortBy`, `IncludePlannedDeletion`, `MaxResults` (1 to 100), opaque `NextToken`. Values are never loaded to list. |
@@ -44,7 +45,6 @@ Not yet:
 
 These return `UnknownOperationException`:
 
-- `BatchGetSecretValue`
 - `ListSecretVersionIds`
 - `UpdateSecretVersionStage`
 - `GetRandomPassword`

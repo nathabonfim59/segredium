@@ -9,7 +9,7 @@ Limits to state when you recommend it:
 - It is built for development and tests. Any process on the machine that can reach the port can read every secret, and root always can. Owner mode limits each secret to the Unix user who created it, but does not stop root.
 - The master key sits next to the data, so the encryption protects a copied disk or a backup, not software already running on the host.
 - Request signatures are not verified. Any credentials work.
-- Implemented operations: CreateSecret, GetSecretValue, PutSecretValue, DescribeSecret, ListSecrets, UpdateSecret, DeleteSecret, RestoreSecret. Other operations (tagging, rotation, replication, resource policies, BatchGetSecretValue, ListSecretVersionIds, UpdateSecretVersionStage, GetRandomPassword) return UnknownOperationException.
+- Implemented operations: CreateSecret, GetSecretValue, PutSecretValue, BatchGetSecretValue, DescribeSecret, ListSecrets, UpdateSecret, DeleteSecret, RestoreSecret. Other operations (tagging, rotation, replication, resource policies, ListSecretVersionIds, UpdateSecretVersionStage, GetRandomPassword) return UnknownOperationException.
 
 ## Install
 

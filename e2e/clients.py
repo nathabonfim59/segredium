@@ -31,9 +31,9 @@ class CLI:
             return
         assert result.returncode == 0, result.stderr
         output = json.loads(result.stdout)
-        if "SecretBinary" in output:
-            output["SecretBinary"] = base64.b64decode(output["SecretBinary"])
-        # CLI v2 renders modeled timestamps as ISO8601, including nested list entries.
+        # CLI v2 renders blobs as base64 and modeled timestamps as ISO8601, including nested
+        # list entries such as BatchGetSecretValue's SecretValues.
+        decode_blobs(output)
         normalize_dates(output)
         return output
 
@@ -60,6 +60,18 @@ class Boto:
 
 def token():
     return str(uuid.uuid4())
+
+
+def decode_blobs(value):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key == "SecretBinary" and isinstance(item, str):
+                value[key] = base64.b64decode(item)
+            else:
+                decode_blobs(item)
+    elif isinstance(value, list):
+        for item in value:
+            decode_blobs(item)
 
 
 def normalize_dates(value):
@@ -122,6 +134,71 @@ def pagination_checks(client):
     empty = client.call("list_secrets", Filters=[{"Key": "name", "Values": ["e2e/absent"]}])
     assert empty["SecretList"] == [] and "NextToken" not in empty, empty
     client.call("list_secrets", NextToken="invalid-token", error="InvalidNextTokenException")
+
+
+def batch_pagination_checks(client, prefix, names):
+    filters = [{"Key": "name", "Values": [prefix + "Secret"]}]
+    first = client.call("batch_get_secret_value", Filters=filters, MaxResults=1)
+    assert len(first["SecretValues"]) == 1, first
+    assert first.get("NextToken"), first
+    last = client.call("batch_get_secret_value", Filters=filters, MaxResults=20,
+                       NextToken=first["NextToken"])
+    assert last["SecretValues"] and "NextToken" not in last, last
+    returned = [entry["Name"] for entry in first["SecretValues"] + last["SecretValues"]]
+    assert sorted(returned) == names, (first, last)
+    empty = client.call("batch_get_secret_value", Filters=[{"Key": "name", "Values": ["e2e/absent"]}])
+    assert empty["SecretValues"] == [] and "NextToken" not in empty, empty
+    client.call("batch_get_secret_value", Filters=filters, NextToken="invalid-token",
+                error="InvalidNextTokenException")
+
+
+def batch_checks(client):
+    if isinstance(client, Boto) and "BatchGetSecretValue" not in client.client.meta.service_model.operation_names:
+        print(f"SKIP: {client.label} {client.region}: client model has no BatchGetSecretValue", flush=True)
+        return
+    prefix = f"e2e/{client.label.replace(' ', '-')}/"
+    names = [prefix + "SecretString", prefix + "SecretBinary"]
+    expected = {name: client.call("get_secret_value", SecretId=name) for name in names}
+
+    result = client.call("batch_get_secret_value", SecretIdList=names + names[:1] + ["e2e/absent"])
+    assert "NextToken" not in result, result
+    returned = [entry["Name"] for entry in result["SecretValues"]]
+    assert sorted(returned) == sorted(names + names[:1]), result
+    error, = result["Errors"]
+    assert error["SecretId"] == "e2e/absent", error
+    assert error["ErrorCode"] == "ResourceNotFoundException", error
+    assert isinstance(error["Message"], str) and error["Message"], error
+    for entry in result["SecretValues"]:
+        reference = expected[entry["Name"]]
+        assert entry["ARN"] == reference["ARN"], entry
+        assert entry["VersionId"] == reference["VersionId"], entry
+        assert entry["VersionStages"] == ["AWSCURRENT"], entry
+        assert entry["CreatedDate"] == reference["CreatedDate"], entry
+        member = "SecretBinary" if "SecretBinary" in reference else "SecretString"
+        assert entry[member] == reference[member], entry
+        other = "SecretString" if member == "SecretBinary" else "SecretBinary"
+        assert other not in entry, entry
+
+    # A deleted secret is a per-secret error, not a failed call.
+    scheduled = prefix + "Scheduled"
+    client.call("create_secret", Name=scheduled, SecretString="scheduled")
+    client.call("delete_secret", SecretId=scheduled, RecoveryWindowInDays=7)
+    result = client.call("batch_get_secret_value", SecretIdList=[scheduled])
+    assert result["SecretValues"] == [] and "NextToken" not in result, result
+    error, = result["Errors"]
+    assert error["SecretId"] == scheduled and error["ErrorCode"] == "InvalidRequestException", error
+    client.call("delete_secret", SecretId=scheduled, ForceDeleteWithoutRecovery=True)
+
+    batch_pagination_checks(client, prefix, sorted(names))
+
+    client.call("batch_get_secret_value", error="InvalidParameterException")
+    filters = [{"Key": "name", "Values": [prefix]}]
+    client.call("batch_get_secret_value", SecretIdList=names, Filters=filters,
+                error="InvalidParameterException")
+    client.call("batch_get_secret_value", SecretIdList=names, MaxResults=1,
+                error="InvalidParameterException")
+    client.call("batch_get_secret_value", SecretIdList=names, NextToken="token",
+                error="InvalidParameterException")
 
 
 def update_checks(client, first, member, previous_value, new_value, previous_token):
@@ -247,6 +324,7 @@ def exercise(client):
         metadata_checks(client, first, first_token, pending_token, next_token)
 
     pagination_checks(client)
+    batch_checks(client)
     # Run after metadata/pagination assertions, which expect the original stage map.
     for member, previous, updated in [
         ("SecretString", "second string", "updated string"),
@@ -258,7 +336,7 @@ def exercise(client):
     delete_restore_checks(client)
     client.call("get_secret_value", SecretId="e2e/absent", error="ResourceNotFoundException")
     client.call("describe_secret", SecretId="e2e/absent", error="ResourceNotFoundException")
-    print(f"PASS: {client.label} {client.region}: string, binary, stages, idempotency, describe, list, pagination, update, delete, restore, errors", flush=True)
+    print(f"PASS: {client.label} {client.region}: string, binary, stages, idempotency, describe, list, batch, pagination, update, delete, restore, errors", flush=True)
 
 
 if __name__ == "__main__":
