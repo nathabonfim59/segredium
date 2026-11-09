@@ -1,6 +1,5 @@
 package ops
 
-
 // Contract for BatchGetSecretValue (frozen by the orchestrator; the handler body is the
 // implementer's job). Wire shapes follow botocore secretsmanager/2017-10-17/service-2.json.
 
@@ -23,4 +22,3 @@ type apiErrorEntry struct {
 	ErrorCode string `json:"ErrorCode"`
 	Message   string `json:"Message"`
 }
-
