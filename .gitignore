@@ -3,3 +3,6 @@
 *.db
 *.db-*
 /dist/
+/site/.vitepress/cache/
+/site/.vitepress/dist/
+/node_modules/

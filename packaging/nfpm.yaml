@@ -40,8 +40,10 @@ contents:
     dst: /usr/share/doc/segredium/LICENSE
   - src: README.md
     dst: /usr/share/doc/segredium/README.md
-  - src: docs/
+  - src: docs/*.md
     dst: /usr/share/doc/segredium/docs/
+  - src: docs/install/
+    dst: /usr/share/doc/segredium/docs/install/
     type: tree
   - dst: /var/lib/segredium
     type: dir

@@ -36,13 +36,13 @@ or against anyone who can read the data directory and the key.
 
 With `storage.backend: file`:
 
-- **Files:** each secret, with all its versions and metadata, is one file under `storage.path`
+- **Files.** Each secret, with all its versions and metadata, is one file under `storage.path`
   (directory `0700`, files `0600`). Each file is named after the SHA-256 of region and ARN, so
   file names don't reveal secret names.
-- **Encryption:** contents are encrypted with AES-256-GCM under a 32-byte master key, with a fresh
+- **Encryption.** Contents are encrypted with AES-256-GCM under a 32-byte master key, with a fresh
   random nonce per write. The file name is used as additional authenticated data, so a file can't
   be swapped in under another secret's name.
-- **Master key:** it is generated from the OS CSPRNG on first start
+- **Master key.** It is generated from the OS CSPRNG on first start
   (`<path>/master.key`, `0600`). The server refuses to start if the key is readable by group or
   others.
 - **Durable writes:**
@@ -53,7 +53,7 @@ With `storage.backend: file`:
 
   A crash leaves either the old file or the new one. Leftover temporary files are ignored at
   startup.
-- **Damaged files:** a corrupt or undecryptable file stops startup with an error. Secrets are
+- **Damaged files.** A corrupt or undecryptable file stops startup with an error. Secrets are
   never dropped silently.
 
 Since the key lives on the same machine, the encryption protects backups, copied disks and stray
@@ -64,13 +64,13 @@ Secret values are never written to logs or included in validation error messages
 
 ## Built-in CA
 
-- **Root:** an ECDSA P-256 CA in `tls.ca_dir` (`ca.crt.pem`; `ca.key.pem`, mode `0600`). Distribute
+- **Root.** An ECDSA P-256 CA in `tls.ca_dir` (`ca.crt.pem`; `ca.key.pem`, mode `0600`). Distribute
   only the certificate.
-- **Leaf certificates:** they are issued only for Secrets Manager endpoint hostnames
+- **Leaf certificates.** They are issued only for Secrets Manager endpoint hostnames
   (`secretsmanager[-fips].<region>.amazonaws.com`, `.api.aws`, and the China partition) and
   `localhost`. Other SNI names are refused, so the CA can't be used to impersonate other sites
   through segredium.
-- **Lifetime:** leaves last 24 h and are renewed early. At most 64 are cached, in memory only.
+- **Lifetime.** Leaves last 24 h and are renewed early. At most 64 are cached, in memory only.
 
 Trusting the root lets anyone holding `ca.key.pem` impersonate any site to that client. Keep the
 key root-only, and remove the CA from trust stores when you stop using segredium.

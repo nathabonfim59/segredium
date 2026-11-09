@@ -4,13 +4,13 @@ segredium is a small, self-hosted server that speaks the AWS Secrets Manager API
 `secretsmanager.<region>.amazonaws.com` at it in `/etc/hosts`, trust its CA, and unmodified AWS
 tools (AWS CLI, boto3, the AWS SDKs) keep working without an endpoint override.
 
-- **Drop-in:** the AWS JSON 1.1 protocol with AWS's member names, shapes, error types and messages.
+- **Drop-in.** The AWS JSON 1.1 protocol with AWS's member names, shapes, error types and messages.
   It is tested with AWS CLI v2, boto3 and aws-sdk-go-v2 against the real hostnames.
-- **Small:** a single static Go binary with one dependency (`gopkg.in/yaml.v3`). Idle RSS is about
+- **Small.** A single static Go binary with one dependency (`gopkg.in/yaml.v3`). Idle RSS is about
   12 MB, and there are no background goroutines except one purge timer.
-- **Persistent:** every secret is stored as its own AES-256-GCM encrypted file, with a machine key
+- **Persistent.** Every secret is stored as its own AES-256-GCM encrypted file, with a machine key
   that is generated automatically.
-- **Local trust model:** the machine is the trust boundary, as with an IAM policy. An optional
+- **Local trust model.** The machine is the trust boundary, as with an IAM policy. An optional
   per-Unix-user mode limits each secret to the user who created it.
 
 > [!WARNING]
@@ -51,7 +51,7 @@ below. To build the packages yourself, run `make packages` (needs Go; fetches nf
 Or build from source with Go 1.27.3 or newer:
 
 ```sh
-make build                     # → bin/segredium
+make build                     # writes bin/segredium
 sudo ./bin/segredium serve     # HTTPS on :443, data in /var/lib/segredium  (installed package: use the service)
 ```
 
@@ -89,6 +89,11 @@ hostnames to `NO_PROXY`.
 
 ## Documentation
 
+The full documentation is at <https://nathabonfim59.github.io/segredium/>. The same pages are in `docs/`:
+
+- [Install](docs/install/index.md): packages for Debian, Ubuntu, Fedora, RHEL and Alpine, a static binary, and a source build
+- [Troubleshooting](docs/install/troubleshooting.md): errors you may meet and what causes them
+- [Go API reference](docs/api-reference/go/index.md): generated from the Go source with `npm run docs:api`
 - [Installation and client setup](docs/setup.md): building, running as a service, routing, and trusting the CA
 - [Configuration](docs/configuration.md): every YAML key and `SEGREDIUM_*` variable
 - [Security model](docs/security.md): trust boundary, encryption at rest, owner mode, CA

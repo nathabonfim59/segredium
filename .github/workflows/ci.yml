@@ -23,6 +23,22 @@ jobs:
           go-version-file: go.mod
       - run: make check
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: npm ci
+      - name: Go API reference is up to date
+        run: npm run docs:check
+      - run: npm run docs:build
+
   packages:
     name: Packages
     runs-on: ubuntu-26.04

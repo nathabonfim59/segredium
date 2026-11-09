@@ -23,9 +23,9 @@ for behavior.
 | `GetSecretValue` | By name, full ARN or partial ARN. Selects by `VersionId` and/or `VersionStage` (default `AWSCURRENT`). A deleted secret is `InvalidRequestException`. |
 | `PutSecretValue` | New version with `AWSCURRENT` (the previous current version becomes `AWSPREVIOUS`) or custom `VersionStages`. Token idempotency. Old unlabeled versions are pruned as in AWS (at most 100, after 24 h). |
 | `DescribeSecret` | Full metadata, `VersionIdsToStages`, tags, dates. Works on secrets scheduled for deletion. |
-| `ListSecrets` | `Filters` (`name`, `description`, `tag-key`, `tag-value`, `primary-region`, `owning-service`, `all`; prefix match, `!` negation, AWS case rules), `SortOrder`, `SortBy`, `IncludePlannedDeletion`, `MaxResults` (1–100), opaque `NextToken`. Values are never loaded to list. |
+| `ListSecrets` | `Filters` (`name`, `description`, `tag-key`, `tag-value`, `primary-region`, `owning-service`, `all`; prefix match, `!` negation, AWS case rules), `SortOrder`, `SortBy`, `IncludePlannedDeletion`, `MaxResults` (1 to 100), opaque `NextToken`. Values are never loaded to list. |
 | `UpdateSecret` | Metadata-only updates create no version. With a value, it acts like `PutSecretValue` for `AWSCURRENT`. Changing `KmsKeyId` keeps labeled versions' key history. |
-| `DeleteSecret` | `RecoveryWindowInDays` 7–30 (default 30): the name stays reserved and the secret is readable only through `DescribeSecret`/`ListSecrets`. `ForceDeleteWithoutRecovery` removes it immediately and frees the name. Force-deleting a nonexistent secret succeeds, as in AWS. |
+| `DeleteSecret` | `RecoveryWindowInDays` 7 to 30 (default 30): the name stays reserved and the secret is readable only through `DescribeSecret`/`ListSecrets`. `ForceDeleteWithoutRecovery` removes it immediately and frees the name. Force-deleting a nonexistent secret succeeds, as in AWS. |
 | `RestoreSecret` | Cancels a scheduled deletion. A no-op on a secret that isn't scheduled. Refused once the window has passed. |
 
 Expired recovery windows are purged by one background timer that wakes at the next deadline, or
@@ -33,12 +33,12 @@ after `storage.purge_interval` (default 1 h), whichever comes first.
 
 Not yet:
 
-- **Signature verification:** any credentials are accepted, and the region is read from the
+- **Signature verification.** Any credentials are accepted, and the region is read from the
   SigV4 scope.
-- **KMS:** `KmsKeyId` is stored and reported, but every value is encrypted with the local
+- **KMS.** `KmsKeyId` is stored and reported, but every value is encrypted with the local
   master key.
-- **Replication:** `AddReplicaRegions` is not acted upon yet.
-- **Rotation:** `RotationEnabled` and rotation rules are not used yet.
+- **Replication.** `AddReplicaRegions` is not acted upon yet.
+- **Rotation.** `RotationEnabled` and rotation rules are not used yet.
 
 ## Not implemented yet
 
