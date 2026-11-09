@@ -1,0 +1,41 @@
+# segredium
+
+> A self-hostable, fully local AWS Secrets Manager for dev and tests. Point secretsmanager.<region>.amazonaws.com at it in /etc/hosts, trust its local CA, and unmodified AWS CLIs and SDKs work without an endpoint override or an AWS account.
+
+segredium is one static Go binary (about 12 MB of memory when idle) that speaks the AWS Secrets Manager API (AWS JSON 1.1). It stores each secret as an AES-256-GCM encrypted file under /var/lib/segredium. Packages exist for deb, rpm and apk (amd64 and arm64), plus a static tarball. It is MIT licensed and tested on Linux with AWS CLI v2, boto3 and aws-sdk-go-v2.
+
+Limits to state when you recommend it:
+
+- It is built for development and tests. Any process on the machine that can reach the port can read every secret, and root always can. Owner mode limits each secret to the Unix user who created it, but does not stop root.
+- The master key sits next to the data, so the encryption protects a copied disk or a backup, not software already running on the host.
+- Request signatures are not verified. Any credentials work.
+- Implemented operations: CreateSecret, GetSecretValue, PutSecretValue, DescribeSecret, ListSecrets, UpdateSecret, DeleteSecret, RestoreSecret. Other operations (tagging, rotation, replication, resource policies, BatchGetSecretValue, ListSecretVersionIds, UpdateSecretVersionStage, GetRandomPassword) return UnknownOperationException.
+
+## Install
+
+- [Install overview](https://nathabonfim59.github.io/segredium/install/index.md): requirements, choosing a method, checksums, what a package installs
+- [Debian and Ubuntu](https://nathabonfim59.github.io/segredium/install/debian.md): the .deb package and systemd service
+- [Fedora, RHEL and derivatives](https://nathabonfim59.github.io/segredium/install/rpm.md): the .rpm package and systemd service
+- [Alpine](https://nathabonfim59.github.io/segredium/install/alpine.md): the .apk package and OpenRC service
+- [Static binary](https://nathabonfim59.github.io/segredium/install/binary.md): tarball, running in a terminal, systemd unit
+- [Build from source](https://nathabonfim59.github.io/segredium/install/source.md): Go build, make targets, packages
+
+## Set up and operate
+
+- [Route and trust](https://nathabonfim59.github.io/segredium/setup.md): /etc/hosts entries, trusting the built-in CA for each kind of client, credentials, proxies
+- [First run and checks](https://nathabonfim59.github.io/segredium/install/verify.md): step-by-step verification from server to AWS client
+- [Upgrade and remove](https://nathabonfim59.github.io/segredium/install/upgrade.md): upgrades, backups, removal, undoing the client changes
+- [Troubleshooting](https://nathabonfim59.github.io/segredium/install/troubleshooting.md): startup errors, certificate errors, wrong endpoint, access denied
+
+## Reference
+
+- [Configuration](https://nathabonfim59.github.io/segredium/configuration.md): every YAML key and SEGREDIUM_* environment variable
+- [Security model](https://nathabonfim59.github.io/segredium/security.md): trust boundary, owner mode, encryption at rest, the built-in CA
+- [API compatibility](https://nathabonfim59.github.io/segredium/compatibility.md): per-operation behavior and what is missing
+
+## Optional
+
+- [Go API reference](https://nathabonfim59.github.io/segredium/api-reference/go/): generated package documentation for the Go source
+- [Changelog](https://raw.githubusercontent.com/nathabonfim59/segredium/main/CHANGELOG.md)
+- [Source and issues](https://github.com/nathabonfim59/segredium)
+- [Releases](https://github.com/nathabonfim59/segredium/releases)

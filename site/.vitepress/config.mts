@@ -1,5 +1,5 @@
-import { existsSync, readdirSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 
@@ -23,6 +23,24 @@ function goPackageItems(): DefaultTheme.SidebarItem[] {
   return items.sort((a, b) => a.text!.localeCompare(b.text!))
 }
 
+// Copy the hand-written pages into the output as .md files, so llms.txt can link to markdown.
+// The generated API reference is left out: it is large and has its own HTML pages.
+function copyMarkdown(outDir: string) {
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name)
+      const rel = relative(docsDir, path).split('\\').join('/')
+      if (entry.isDirectory()) {
+        if (entry.name !== 'api-reference' && entry.name !== 'public') walk(path)
+      } else if (entry.name.endsWith('.md') && rel !== 'index.md' && rel !== 'development.md') {
+        mkdirSync(dirname(join(outDir, rel)), { recursive: true })
+        copyFileSync(path, join(outDir, rel))
+      }
+    }
+  }
+  walk(docsDir)
+}
+
 // The pages live in ../docs so the same Markdown ships in the packages.
 export default defineConfig({
   title: 'segredium',
@@ -32,6 +50,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   srcExclude: ['development.md'],
+  buildEnd: ({ outDir }) => copyMarkdown(outDir),
   themeConfig: {
     nav: [
       { text: 'Docs', link: '/install/', activeMatch: '^/(install|setup|configuration|security|compatibility|api-reference)' },
