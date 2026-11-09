@@ -42,7 +42,14 @@ func getSecretValue(ctx context.Context, d *sm.Deps, r *api.Request) (any, error
 	if err := validator.Err(); err != nil {
 		return nil, err
 	}
-	s, err := d.Resolve(ctx, r.Region, *in.SecretID)
+	return readSecretValue(ctx, d, r, *in.SecretID, &in)
+}
+
+// readSecretValue resolves secretID, checks access, selects the version in asks for and records
+// the access day. GetSecretValue and BatchGetSecretValue share it, so both return the same
+// errors and the same output for one secret. Callers validate the input first.
+func readSecretValue(ctx context.Context, d *sm.Deps, r *api.Request, secretID string, in *getSecretValueInput) (*getSecretValueOutput, error) {
+	s, err := d.Resolve(ctx, r.Region, secretID)
 	if err != nil {
 		return nil, err
 	}

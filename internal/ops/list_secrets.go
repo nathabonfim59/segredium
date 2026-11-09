@@ -127,33 +127,11 @@ func (in *listSecretsInput) validate() error {
 	v.Length("nextToken", in.NextToken, 1, 4096)
 	validateEnum(&v, "sortOrder", in.SortOrder, []string{"asc", "desc"})
 	validateEnum(&v, "sortBy", in.SortBy, []string{"created-date", "last-accessed-date", "last-changed-date", "name"})
-	validateListLength(&v, "filters", len(in.Filters), in.Filters != nil, 0, 10)
-	for i, filter := range in.Filters {
-		member := fmt.Sprintf("filters.%d.member", i+1)
-		v.Required(member, filter != nil)
-		if filter == nil {
-			continue
-		}
-		validateEnum(&v, member+".key", filter.Key, []string{"description", "name", "tag-key", "tag-value", "primary-region", "owning-service", "all"})
-		validateListLength(&v, member+".values", len(filter.Values), filter.Values != nil, 1, 10)
-		for j, value := range filter.Values {
-			field := fmt.Sprintf("%s.values.%d.member", member, j+1)
-			v.Required(field, value != nil)
-			v.Length(field, value, 0, 512)
-			if value != nil && !validFilterValue(*value) {
-				v.Custom(fmt.Sprintf("Value '%s' at '%s' failed to satisfy constraint: Member must satisfy regular expression pattern: ^\\!?[a-zA-Z0-9 :_@\\/\\+\\=\\.\\-\\!]*$", *value, field))
-			}
-		}
-	}
+	validateFilters(&v, in.Filters)
 	if err := v.Err(); err != nil {
 		return err
 	}
-	for _, filter := range in.Filters {
-		if filter.Key == nil || len(filter.Values) == 0 {
-			return apierr.InvalidParameter("The filter must include a key and at least one value.")
-		}
-	}
-	return nil
+	return checkFilters(in.Filters)
 }
 
 func validateEnum(v *sm.Validator, member string, value *string, values []string) {
@@ -390,3 +368,36 @@ func decodeListToken(value string, query [32]byte) (uint64, error) {
 }
 
 func invalidListToken() error { return apierr.InvalidNextToken("The NextToken value is invalid.") }
+
+// validateFilters applies the Filters constraints shared by ListSecrets and BatchGetSecretValue
+// (max 10 filters, 1 to 10 values each, key enum, value pattern).
+func validateFilters(v *sm.Validator, filters []*listFilter) {
+	validateListLength(v, "filters", len(filters), filters != nil, 0, 10)
+	for i, filter := range filters {
+		member := fmt.Sprintf("filters.%d.member", i+1)
+		v.Required(member, filter != nil)
+		if filter == nil {
+			continue
+		}
+		validateEnum(v, member+".key", filter.Key, []string{"description", "name", "tag-key", "tag-value", "primary-region", "owning-service", "all"})
+		validateListLength(v, member+".values", len(filter.Values), filter.Values != nil, 1, 10)
+		for j, value := range filter.Values {
+			field := fmt.Sprintf("%s.values.%d.member", member, j+1)
+			v.Required(field, value != nil)
+			v.Length(field, value, 0, 512)
+			if value != nil && !validFilterValue(*value) {
+				v.Custom(fmt.Sprintf("Value '%s' at '%s' failed to satisfy constraint: Member must satisfy regular expression pattern: ^\\!?[a-zA-Z0-9 :_@\\/\\+\\=\\.\\-\\!]*$", *value, field))
+			}
+		}
+	}
+}
+
+// checkFilters runs after validateFilters reported no errors, as AWS does.
+func checkFilters(filters []*listFilter) error {
+	for _, filter := range filters {
+		if filter.Key == nil || len(filter.Values) == 0 {
+			return apierr.InvalidParameter("The filter must include a key and at least one value.")
+		}
+	}
+	return nil
+}
